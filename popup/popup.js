@@ -59,9 +59,23 @@ async function renderCurrentProduct(product, watchlist) {
     return;
   }
 
-  // product data exists — make sure we're still on that Amazon tab
-  if (!isAmazonTab) {
+  // Discard stale data: product must have been recorded on the current tab's URL
+  const productIsForThisTab = tab?.url && product._url && tab.url === product._url;
+  if (!isAmazonTab || !productIsForThisTab) {
     noProduct.hidden = false;
+    if (isAmazonTab) {
+      hintIcon.textContent = '↻';
+      hintText.innerHTML = 'Refresh this tab to activate PriceHawk.';
+      if (!document.getElementById('ph-refresh-btn')) {
+        const btn = document.createElement('button');
+        btn.id = 'ph-refresh-btn';
+        btn.className = 'btn btn--primary';
+        btn.textContent = 'Refresh Tab';
+        btn.style.marginTop = '10px';
+        btn.addEventListener('click', () => { chrome.tabs.reload(tab.id); window.close(); });
+        noProduct.appendChild(btn);
+      }
+    }
     return;
   }
 

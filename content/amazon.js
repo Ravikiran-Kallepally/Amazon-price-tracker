@@ -3,49 +3,77 @@
 (async function () {
   'use strict';
 
+  // Not a product page — bail silently
   if (!PH.parser.isProductPage()) return;
 
   const product = PH.parser.extractAll();
-  if (!product.asin || !product.price) return;
 
-  // Persist price history and product metadata
-  const history = await PH.storage.recordPricePoint(product.asin, product.price);
-
-  const existing = await PH.storage.getProduct(product.asin);
-  const saved = {
-    ...product,
-    priceHigh: existing ? Math.max(existing.priceHigh ?? 0, product.price) : product.price,
-    priceLow:  existing ? Math.min(existing.priceLow  ?? Infinity, product.price) : product.price,
-    firstSeen: existing?.firstSeen ?? product.timestamp,
-    lastSeen:  product.timestamp
-  };
-  await PH.storage.saveProduct(saved);
-
-  // Make current product available to the popup without message-passing
-  await PH.storage.setCurrentProduct(saved);
-
-  // Anonymised market snapshot for future data layer (stored locally, no PII)
-  const settings = await PH.storage.getSettings();
-  if (settings.dataSharing) {
-    await PH.storage.recordSnapshot({
-      asin:        product.asin,
-      price:       product.price,
-      bsr:         product.bsr,
-      bsrCategory: product.bsrCategory,
-      reviewCount: product.reviewCount,
-      rating:      product.rating,
-      sellerCount: product.sellerCount,
-      domain:      product.domain,
-      ts:          product.timestamp
-    });
+  // No ASIN means we can't identify the product at all — bail
+  if (!product.asin) {
+    console.warn('[PriceHawk] Could not detect ASIN on this page.');
+    return;
   }
 
-  // Notify background so it can fire a price-drop alert if needed
-  chrome.runtime.sendMessage({ type: 'PRICE_OBSERVED', product, history });
+  // Log what we found so you can debug in DevTools → Console
+  console.log('[PriceHawk] Detected product:', product.asin, '| price:', product.price);
 
-  // Render overlay if enabled
-  if (settings.overlayEnabled !== false) {
-    await renderOverlay(product, history);
+  // ── Render overlay first (don't let storage failures block the UI) ─────
+  let history = [];
+  try {
+    const settings = await PH.storage.getSettings();
+    if (settings.overlayEnabled !== false) {
+      await renderOverlay(product, history);
+    }
+  } catch (err) {
+    console.error('[PriceHawk] Overlay render error:', err);
+  }
+
+  // ── Storage & background work (non-blocking for overlay) ──────────────
+  try {
+    if (product.price) {
+      history = await PH.storage.recordPricePoint(product.asin, product.price);
+
+      // Update the overlay chart once history is loaded
+      const chartEl = document.getElementById('ph-chart');
+      if (chartEl && history.length >= 2) {
+        PH.chart.sparkline(chartEl, history, { width: 214, height: 50 });
+      }
+    }
+
+    const existing = await PH.storage.getProduct(product.asin);
+    const saved = {
+      ...product,
+      priceHigh: product.price
+        ? (existing ? Math.max(existing.priceHigh ?? 0, product.price) : product.price)
+        : existing?.priceHigh,
+      priceLow: product.price
+        ? (existing ? Math.min(existing.priceLow ?? Infinity, product.price) : product.price)
+        : existing?.priceLow,
+      firstSeen: existing?.firstSeen ?? product.timestamp,
+      lastSeen:  product.timestamp
+    };
+    await PH.storage.saveProduct(saved);
+    await PH.storage.setCurrentProduct(saved);
+
+    const settings = await PH.storage.getSettings();
+
+    if (settings.dataSharing && product.price) {
+      await PH.storage.recordSnapshot({
+        asin:        product.asin,
+        price:       product.price,
+        bsr:         product.bsr,
+        bsrCategory: product.bsrCategory,
+        reviewCount: product.reviewCount,
+        rating:      product.rating,
+        sellerCount: product.sellerCount,
+        domain:      product.domain,
+        ts:          product.timestamp
+      });
+    }
+
+    chrome.runtime.sendMessage({ type: 'PRICE_OBSERVED', product, history });
+  } catch (err) {
+    console.error('[PriceHawk] Storage error:', err);
   }
 })();
 

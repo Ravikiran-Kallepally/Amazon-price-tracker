@@ -47,17 +47,30 @@ PH.parser = (() => {
     },
 
     getPrice() {
+      // Ordered from most-specific to least-specific.
+      // Deal/coupon pages (e.g. "-50% $24.99") use different containers than regular prices.
       const selectors = [
+        // Deal / coupon / apex layouts (common on sale pages)
+        '.priceToPay .a-offscreen',
+        '.apexPriceToPay .a-offscreen',
+        '#apex_offerDisplay_desktop_feature_div .a-price .a-offscreen',
+        '#dealsPrice_feature_div .a-price .a-offscreen',
+        '#cxewok-aod-price-1 .a-offscreen',
+        // Standard buy box
         '#corePrice_feature_div .a-price .a-offscreen',
-        '#apex_offerDisplay_desktop .a-price .a-offscreen',
         '#corePriceDisplay_desktop_feature_div .a-price .a-offscreen',
+        '#apex_offerDisplay_desktop .a-price .a-offscreen',
         '#buyNewSection .a-price .a-offscreen',
         '.reinventPricePolicyMessage .a-price .a-offscreen',
+        // Legacy selectors
         '#priceblock_ourprice',
         '#priceblock_dealprice',
         '#price_inside_buybox',
         '#newBuyBoxPrice',
-        '.a-price[data-a-color="price"] .a-offscreen'
+        '.a-price[data-a-color="price"] .a-offscreen',
+        // Last-resort: any non-struck price in the right column
+        '#rightCol .a-price:not([data-a-strike]) .a-offscreen',
+        '#desktop_buybox .a-price .a-offscreen'
       ];
 
       for (const sel of selectors) {
@@ -67,6 +80,18 @@ PH.parser = (() => {
         const price = parseFloat(raw);
         if (price > 0 && price < 100000) return price;
       }
+
+      // Absolute fallback: find the smallest numeric price-like element
+      // in the right column (avoids picking up "Typical price" / crossed-out prices)
+      const allPriceEls = document.querySelectorAll(
+        '#rightCol .a-price .a-offscreen, #centerCol .a-price .a-offscreen'
+      );
+      for (const el of allPriceEls) {
+        const raw = el.textContent.replace(/[^0-9.]/g, '');
+        const price = parseFloat(raw);
+        if (price > 0 && price < 100000) return price;
+      }
+
       return null;
     },
 

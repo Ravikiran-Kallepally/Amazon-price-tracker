@@ -99,13 +99,17 @@ PH.storage = (() => {
     },
 
     // ── Current page product (used by popup to read what tab is showing) ──────
+    // Stored in local (not session) for maximum content-script compatibility.
+    // Popup validates freshness via the stored URL.
 
     async setCurrentProduct(product) {
-      await chrome.storage.session.set({ currentProduct: product });
+      await chrome.storage.local.set({
+        currentProduct: { ...product, _url: location.href, _ts: Date.now() }
+      });
     },
 
     async getCurrentProduct() {
-      const data = await chrome.storage.session.get('currentProduct');
+      const data = await chrome.storage.local.get('currentProduct');
       return data.currentProduct || null;
     },
 
