@@ -99,7 +99,7 @@ async function renderOverlay(product, history) {
   PH.chart.sparkline(
     document.getElementById('ph-chart'),
     history,
-    { width: 214, height: 50 }
+    { width: 228, height: 52 }
   );
 
   attachOverlayEvents(overlay, product, history, isTracked);
@@ -107,65 +107,92 @@ async function renderOverlay(product, history) {
 }
 
 function buildOverlayHTML(product, history, isTracked, stats, change) {
-  const price = product.price?.toFixed(2) ?? '—';
-  const changeBadge = change
-    ? `<span class="ph-badge ${change.isDown ? 'ph-badge--down' : 'ph-badge--up'}">
-         ${change.isDown ? '▼' : '▲'} ${Math.abs(change.pct)}%
-       </span>`
+  const priceStr  = product.price != null ? product.price.toFixed(2) : null;
+  const [priceDollars, priceCents] = priceStr ? priceStr.split('.') : ['—', ''];
+
+  const changeDir   = change?.isDown ? 'down' : 'up';
+  const changePct   = change ? Math.abs(change.pct) : null;
+  const changeLabel = change ? `${change.isDown ? '↓' : '↑'} ${changePct}%` : null;
+
+  const lowStr  = stats ? `$${stats.low.toFixed(2)}`  : '—';
+  const highStr = stats ? `$${stats.high.toFixed(2)}` : '—';
+  const bsrStr  = product.bsr ? `#${product.bsr.toLocaleString()}` : '—';
+
+  const ratingLine = product.rating
+    ? `★ ${product.rating}  ·  ${(product.reviewCount || 0).toLocaleString()} reviews`
     : '';
 
-  const bsrHtml = product.bsr
-    ? `<span title="Best Seller Rank">BSR #${product.bsr.toLocaleString()}</span>`
-    : '';
-  const ratingHtml = product.rating
-    ? `<span>⭐ ${product.rating} <span class="ph-dim">(${(product.reviewCount || 0).toLocaleString()})</span></span>`
-    : '';
-  const atLowBadge = stats?.isAtLow
-    ? '<span class="ph-badge ph-badge--low">All-time low</span>'
-    : '';
+  const atLow  = stats?.isAtLow  ? '<span class="ph-tag ph-tag--low">All‑time low</span>' : '';
+  const prime  = product.fbaAvailable ? '<span class="ph-tag ph-tag--prime">Prime</span>' : '';
+  const ctaCls = isTracked ? 'ph-cta ph-cta--tracked' : 'ph-cta';
+  const ctaTxt = isTracked ? '✓ Tracking' : '+ Track Price';
 
   return `
-    <div class="ph-header" id="ph-drag-handle">
-      <span class="ph-logo">⚡ PriceHawk</span>
-      <div class="ph-header-actions">
-        <button class="ph-icon-btn" id="ph-minimize" title="Minimize">─</button>
-        <button class="ph-icon-btn" id="ph-close" title="Close">✕</button>
+    <!-- macOS-style title bar -->
+    <div class="ph-titlebar" id="ph-drag-handle">
+      <div class="ph-wc">
+        <button class="ph-wc-btn ph-wc-close" id="ph-close" title="Close"></button>
+        <button class="ph-wc-btn ph-wc-min"   id="ph-minimize" title="Minimize"></button>
       </div>
+      <span class="ph-app-name">PriceHawk</span>
+      <div class="ph-wc-spacer"></div>
     </div>
 
-    <div id="ph-body">
-      <div class="ph-price-row">
-        <span class="ph-price">$${price}</span>
-        ${changeBadge}
-        ${atLowBadge}
+    <!-- Expanded body -->
+    <div id="ph-body" class="ph-body">
+
+      <!-- Hero price -->
+      <div class="ph-hero">
+        <div class="ph-price-display">
+          ${priceStr
+            ? `<span class="ph-price-dollar">$</span><span class="ph-price-int">${priceDollars}</span><span class="ph-price-dec">.${priceCents}</span>`
+            : `<span class="ph-price-int ph-price--na">—</span>`}
+        </div>
+        <div class="ph-tags">
+          ${changeLabel ? `<span class="ph-tag ph-tag--${changeDir}">${changeLabel}</span>` : ''}
+          ${atLow}
+          ${prime}
+        </div>
       </div>
 
-      ${stats ? `
-      <div class="ph-range">
-        <span>Low <strong>$${stats.low.toFixed(2)}</strong>
-          <span class="ph-dim">${stats.lowDaysAgo > 0 ? PH.chart.timeAgo(history.reduce((a,b) => a.price <= b.price ? a : b).ts) : 'today'}</span>
-        </span>
-        <span>High <strong>$${stats.high.toFixed(2)}</strong></span>
-      </div>` : ''}
-
-      <div id="ph-chart" class="ph-chart"></div>
-
-      <div class="ph-meta">
-        ${bsrHtml}
-        ${ratingHtml}
-        ${product.fbaAvailable ? '<span class="ph-prime">Prime</span>' : ''}
+      <!-- Low / High / BSR stats row -->
+      <div class="ph-stats-row">
+        <div class="ph-stat">
+          <span class="ph-stat-label">LOW</span>
+          <span class="ph-stat-val">${lowStr}</span>
+        </div>
+        <div class="ph-stat-sep"></div>
+        <div class="ph-stat">
+          <span class="ph-stat-label">HIGH</span>
+          <span class="ph-stat-val">${highStr}</span>
+        </div>
+        <div class="ph-stat-sep"></div>
+        <div class="ph-stat">
+          <span class="ph-stat-label">BSR</span>
+          <span class="ph-stat-val">${bsrStr}</span>
+        </div>
       </div>
 
-      <div class="ph-divider"></div>
+      <!-- Sparkline chart -->
+      <div class="ph-chart-card">
+        <div id="ph-chart" class="ph-chart"></div>
+        <span class="ph-pts-label">${history.length} price point${history.length !== 1 ? 's' : ''}</span>
+      </div>
 
-      <div class="ph-calc-section">
-        <label class="ph-label">Source / Buy Price</label>
-        <div class="ph-input-row">
-          <span class="ph-currency">$</span>
+      <!-- Rating / meta -->
+      ${ratingLine ? `<p class="ph-meta-line">${ratingLine}</p>` : ''}
+
+      <div class="ph-sep"></div>
+
+      <!-- Profit calculator -->
+      <div class="ph-calc-wrap">
+        <label class="ph-field-label">SOURCE PRICE</label>
+        <div class="ph-field">
+          <span class="ph-field-pre">$</span>
           <input
-            type="number"
             id="ph-buy-price"
-            class="ph-input"
+            class="ph-field-input"
+            type="number"
             placeholder="0.00"
             min="0"
             step="0.01"
@@ -175,18 +202,47 @@ function buildOverlayHTML(product, history, isTracked, stats, change) {
         <div id="ph-calc-result" class="ph-calc-result"></div>
       </div>
 
-      <div class="ph-footer">
-        <button class="ph-btn ${isTracked ? 'ph-btn--tracked' : 'ph-btn--primary'}" id="ph-track-btn">
-          ${isTracked ? '✓ Tracking' : '+ Track Price'}
-        </button>
-        <span class="ph-dim ph-pts">${history.length} pt${history.length !== 1 ? 's' : ''}</span>
-      </div>
+      <!-- CTA -->
+      <button id="ph-track-btn" class="${ctaCls}">${ctaTxt}</button>
     </div>
 
-    <div id="ph-minimized" class="ph-minimized" style="display:none">
-      <span class="ph-logo">⚡</span>
-      <span class="ph-mini-price">$${price}</span>
-      ${change ? `<span class="${change.isDown ? 'ph-green' : 'ph-red'}">${change.isDown ? '▼' : '▲'}${Math.abs(change.pct)}%</span>` : ''}
+    <!-- Minimized pill (shown when user clicks minimize) -->
+    <div id="ph-minimized" class="ph-pill" style="display:none">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="ph-pill-icon">
+        <polyline points="1,3 5,8 9,5 11,9" stroke="#30D158" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="11" cy="9" r="1.5" fill="#30D158"/>
+      </svg>
+      <span class="ph-pill-price">${priceStr ? `$${priceStr}` : '—'}</span>
+      ${changeLabel ? `<span class="ph-pill-chg ph-pill-chg--${changeDir}">${changeLabel}</span>` : ''}
+    </div>
+  `;
+}
+
+function calcResultHTML(r) {
+  const profitCls = r.isProfitable ? 'ph-val--pos' : 'ph-val--neg';
+  return `
+    <div class="ph-calc-rows">
+      <div class="ph-calc-row">
+        <span>Referral <span class="ph-dimmer">${(r.referralRate * 100).toFixed(0)}%</span></span>
+        <span class="ph-val--neg">−$${r.referralFee}</span>
+      </div>
+      <div class="ph-calc-row">
+        <span>FBA fee <span class="ph-dimmer">est.</span></span>
+        <span class="ph-val--neg">−$${r.fbaFee}</span>
+      </div>
+      <div class="ph-calc-divider"></div>
+      <div class="ph-calc-row ph-calc-profit">
+        <span>Net profit</span>
+        <span class="${profitCls}">${r.isProfitable ? '+' : ''}$${r.profit}</span>
+      </div>
+      <div class="ph-calc-row">
+        <span>ROI</span>
+        <span class="${profitCls}">${r.roi}%</span>
+      </div>
+      <div class="ph-calc-row">
+        <span>Break-even</span>
+        <span>$${r.breakEven}</span>
+      </div>
     </div>
   `;
 }
@@ -217,30 +273,7 @@ function attachOverlayEvents(overlay, product, history, isTracked) {
 
     const r = PH.calculator.calculate(buyPrice, product.price, product.category);
     if (!r) return;
-
-    resultEl.innerHTML = `
-      <div class="ph-calc-row">
-        <span>Referral fee <span class="ph-dim">(${(r.referralRate * 100).toFixed(0)}%)</span></span>
-        <span class="ph-red">−$${r.referralFee}</span>
-      </div>
-      <div class="ph-calc-row">
-        <span>FBA fee <span class="ph-dim">(est.)</span></span>
-        <span class="ph-red">−$${r.fbaFee}</span>
-      </div>
-      <div class="ph-calc-divider"></div>
-      <div class="ph-calc-row ph-calc-profit">
-        <span>Net profit</span>
-        <span class="${r.isProfitable ? 'ph-green' : 'ph-red'}">${r.isProfitable ? '+' : ''}$${r.profit}</span>
-      </div>
-      <div class="ph-calc-row">
-        <span>ROI</span>
-        <span class="${r.isProfitable ? 'ph-green' : 'ph-red'}">${r.roi}%</span>
-      </div>
-      <div class="ph-calc-row">
-        <span>Break-even buy price</span>
-        <span>$${r.breakEven}</span>
-      </div>
-    `;
+    resultEl.innerHTML = calcResultHTML(r);
   });
 
   // Minimize / restore

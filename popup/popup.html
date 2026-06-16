@@ -10,96 +10,102 @@
 
   <!-- Header -->
   <header class="header">
-    <span class="logo">⚡ PriceHawk</span>
-    <button class="icon-btn" id="settings-toggle" title="Settings" aria-label="Toggle settings">⚙</button>
+    <div class="header-brand">
+      <img src="../icons/icon48.png" class="header-icon" alt="PriceHawk" width="20" height="20">
+      <span class="header-title">PriceHawk</span>
+    </div>
+    <button class="header-gear" id="settings-toggle" aria-label="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
   </header>
 
-  <!-- Current product (shown when popup is opened on an Amazon product page) -->
-  <section id="current-product" class="current-product" hidden>
-    <div class="cp-row">
-      <img id="cp-img" class="cp-img" src="" alt="" width="48" height="48">
-      <div class="cp-info">
-        <p id="cp-title" class="cp-title"></p>
-        <div class="cp-price-row">
-          <span id="cp-price" class="cp-price"></span>
+  <!-- Current product (shown when on Amazon product page) -->
+  <section id="current-product" class="product-card" hidden>
+    <div class="product-top">
+      <img id="cp-img" class="product-img" src="" alt="" width="52" height="52">
+      <div class="product-info">
+        <p id="cp-title" class="product-title"></p>
+        <div class="product-price-row">
+          <span id="cp-price" class="product-price"></span>
           <span id="cp-badge" class="badge"></span>
         </div>
+        <p id="cp-meta" class="product-meta"></p>
       </div>
     </div>
-    <div id="cp-meta" class="cp-meta"></div>
-    <div id="cp-chart" class="cp-chart"></div>
-    <button id="cp-track-btn" class="btn btn--primary" style="width:100%"></button>
+    <div id="cp-chart" class="product-chart"></div>
+    <button id="cp-track-btn" class="cta-btn" style="width:100%"></button>
   </section>
 
   <!-- Not on a product page -->
-  <div id="no-product" class="empty-hint" hidden>
+  <div id="no-product" class="empty-state" hidden>
     <span class="empty-icon">🔍</span>
-    <p>Open an Amazon product page to track its price.</p>
+    <p class="empty-text">Open an Amazon product page to track its price.</p>
   </div>
 
   <!-- Watchlist -->
   <section class="section">
     <div class="section-header">
-      <span class="section-title">WATCHLIST</span>
+      <span class="section-label">WATCHLIST</span>
       <span id="wl-count" class="section-count"></span>
     </div>
+
     <ul id="watchlist" class="watchlist"></ul>
-    <div id="wl-empty" class="empty-hint" hidden>
-      <span class="empty-icon">📋</span>
-      <p>No tracked products yet. Hit <strong>Track Price</strong> on any Amazon listing.</p>
+
+    <div id="wl-empty" class="empty-state empty-state--sm" hidden>
+      <span class="empty-icon" style="font-size:20px">📋</span>
+      <p class="empty-text">No tracked products yet.<br>Hit <strong>Track Price</strong> on any Amazon listing.</p>
     </div>
   </section>
 
   <!-- Settings panel -->
   <section id="settings-panel" class="settings-panel" hidden>
-    <div class="settings-title">Settings</div>
+    <p class="settings-title">Settings</p>
 
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Price-drop alerts</div>
-        <div class="setting-hint">Desktop notification when price falls</div>
+    <div class="setting-group">
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Price drop alerts</span>
+          <span class="setting-sub">Desktop notification on price fall</span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="s-alerts"><span class="track"><span class="thumb"></span></span></label>
       </div>
-      <label class="toggle">
-        <input type="checkbox" id="s-alerts">
-        <span class="slider"></span>
-      </label>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Alert threshold</span>
+          <span class="setting-sub">Minimum drop to notify</span>
+        </div>
+        <div class="threshold-wrap">
+          <input type="number" id="s-threshold" class="threshold-input" min="1" max="50">
+          <span class="threshold-unit">%</span>
+        </div>
+      </div>
     </div>
 
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Alert threshold</div>
-        <div class="setting-hint">Minimum drop to trigger alert</div>
+    <div class="setting-group">
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Show overlay on Amazon</span>
+          <span class="setting-sub">Floating panel on product pages</span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="s-overlay"><span class="track"><span class="thumb"></span></span></label>
       </div>
-      <div class="threshold-wrap">
-        <input type="number" id="s-threshold" class="threshold-input" min="1" max="50"> %
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Share anonymous market data</span>
+          <span class="setting-sub">Helps improve deal scoring · No PII</span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="s-sharing"><span class="track"><span class="thumb"></span></span></label>
       </div>
     </div>
 
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Show overlay on Amazon</div>
-        <div class="setting-hint">Floating panel on product pages</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="s-overlay">
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Share anonymous market data</div>
-        <div class="setting-hint">Helps improve deal scoring (no PII)</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="s-sharing">
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="settings-footer">
-      <div id="storage-info" class="storage-info"></div>
-      <button id="clear-btn" class="btn btn--danger">Clear all data</button>
+    <div class="danger-zone">
+      <p id="storage-info" class="storage-info"></p>
+      <button id="clear-btn" class="danger-btn">Clear all data</button>
     </div>
   </section>
 

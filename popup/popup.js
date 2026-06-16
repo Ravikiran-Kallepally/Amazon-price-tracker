@@ -25,7 +25,7 @@ const AMAZON_PATTERN = /amazon\.(com|co\.uk|ca)\//;
 async function renderCurrentProduct(product, watchlist) {
   const section    = document.getElementById('current-product');
   const noProduct  = document.getElementById('no-product');
-  const hintText   = noProduct.querySelector('p');
+  const hintText   = noProduct.querySelector('.empty-text');
   const hintIcon   = noProduct.querySelector('.empty-icon');
 
   // Always resolve the active tab first so we can tailor the message
@@ -81,10 +81,10 @@ async function renderCurrentProduct(product, watchlist) {
 
   section.hidden = false;
 
-  const history = await PH.storage.getPriceHistory(product.asin);
+  const history   = await PH.storage.getPriceHistory(product.asin);
   const isTracked = watchlist.includes(product.asin);
-  const change = PH.chart.priceChange(history);
-  const stats = PH.chart.allTimeStats(history);
+  const change    = PH.chart.priceChange(history);
+  const stats     = PH.chart.allTimeStats(history);
 
   // Image
   const img = document.getElementById('cp-img');
@@ -92,30 +92,33 @@ async function renderCurrentProduct(product, watchlist) {
   else img.style.display = 'none';
 
   // Title
-  const title = product.title ?? '';
-  document.getElementById('cp-title').textContent =
-    title.length > 70 ? title.substring(0, 70) + '…' : title;
+  document.getElementById('cp-title').textContent = product.title ?? '';
 
   // Price
-  document.getElementById('cp-price').textContent = `$${product.price.toFixed(2)}`;
+  document.getElementById('cp-price').textContent =
+    product.price != null ? `$${product.price.toFixed(2)}` : '—';
 
   // Badge
   const badge = document.getElementById('cp-badge');
   if (change) {
-    badge.textContent = `${change.isDown ? '▼' : '▲'} ${Math.abs(change.pct)}%`;
-    badge.className = `badge ${change.isDown ? 'badge--down' : 'badge--up'}`;
+    badge.textContent = `${change.isDown ? '↓' : '↑'} ${Math.abs(change.pct)}%`;
+    badge.className   = `badge ${change.isDown ? 'badge--down' : 'badge--up'}`;
   }
 
-  // Meta
+  // Meta line
   const meta = [];
-  if (product.bsr) meta.push(`BSR #${product.bsr.toLocaleString()}`);
-  if (product.rating) meta.push(`⭐ ${product.rating} (${(product.reviewCount || 0).toLocaleString()})`);
-  if (stats?.isAtLow) meta.push('🏆 All-time low');
-  document.getElementById('cp-meta').textContent = meta.join('  ·  ');
+  if (product.bsr)    meta.push(`BSR #${product.bsr.toLocaleString()}`);
+  if (product.rating) meta.push(`★ ${product.rating}  ·  ${(product.reviewCount||0).toLocaleString()} reviews`);
+  if (stats?.isAtLow) meta.push('All-time low 🏆');
+  document.getElementById('cp-meta').textContent = meta.join('   ');
 
   // Sparkline
   if (history.length >= 2) {
-    PH.chart.sparkline(document.getElementById('cp-chart'), history, { width: 280, height: 50 });
+    PH.chart.sparkline(
+      document.getElementById('cp-chart'),
+      history,
+      { width: 308, height: 48 }
+    );
   }
 
   // Track button
@@ -137,7 +140,7 @@ async function renderCurrentProduct(product, watchlist) {
 
 function updateTrackBtn(btn, isTracked) {
   btn.textContent = isTracked ? '✓ Tracking' : '+ Track Price';
-  btn.className = isTracked ? 'btn btn--tracked' : 'btn btn--primary';
+  btn.className   = isTracked ? 'cta-btn cta-btn--tracked' : 'cta-btn cta-btn--primary';
 }
 
 // ── Watchlist ──────────────────────────────────────────────────────────────
@@ -182,12 +185,12 @@ async function renderWatchlist(watchlistAsins) {
 
     let changeHtml = '';
     if (change) {
-      const cls = change.isDown ? 'ph-green' : 'ph-red';
-      changeHtml = `<span class="${cls}">${change.isDown ? '▼' : '▲'}${Math.abs(change.pct)}%</span>`;
+      const cls = change.isDown ? 'wl-chg-down' : 'wl-chg-up';
+      changeHtml = `<span class="${cls}">${change.isDown ? '↓' : '↑'}${Math.abs(change.pct)}%</span>`;
     }
 
     const atLow = stats?.isAtLow
-      ? '<span class="badge badge--low" title="Current price is the lowest recorded">Low</span>'
+      ? '<span class="wl-badge-low">All-time low</span>'
       : '';
 
     li.innerHTML = `
@@ -242,9 +245,11 @@ function renderSettings(settings) {
 function bindSettingsEvents(settings) {
   // Toggle settings panel
   document.getElementById('settings-toggle').addEventListener('click', async () => {
-    const panel = document.getElementById('settings-panel');
+    const panel  = document.getElementById('settings-panel');
+    const toggle = document.getElementById('settings-toggle');
     const isHidden = panel.hidden;
     panel.hidden = !isHidden;
+    toggle.classList.toggle('active', !isHidden === false);
 
     if (!isHidden) return;
     // Refresh storage info when opening
