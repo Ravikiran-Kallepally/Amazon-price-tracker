@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(mkdir -p \"r:/Chrome Extensions with Claude/Amazon price tracker/background\" \"r:/Chrome Extensions with Claude/Amazon price tracker/content\" \"r:/Chrome Extensions with Claude/Amazon price tracker/popup\" \"r:/Chrome Extensions with Claude/Amazon price tracker/utils\" \"r:/Chrome Extensions with Claude/Amazon price tracker/icons\" && echo \"Directories created\")",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "r:\\Chrome Extensions with Claude\\Amazon price tracker"
+    ]
+  }
+}

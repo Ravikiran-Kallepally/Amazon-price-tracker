@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PriceHawk</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <span class="logo">⚡ PriceHawk</span>
+    <button class="icon-btn" id="settings-toggle" title="Settings" aria-label="Toggle settings">⚙</button>
+  </header>
+
+  <!-- Current product (shown when popup is opened on an Amazon product page) -->
+  <section id="current-product" class="current-product" hidden>
+    <div class="cp-row">
+      <img id="cp-img" class="cp-img" src="" alt="" width="48" height="48">
+      <div class="cp-info">
+        <p id="cp-title" class="cp-title"></p>
+        <div class="cp-price-row">
+          <span id="cp-price" class="cp-price"></span>
+          <span id="cp-badge" class="badge"></span>
+        </div>
+      </div>
+    </div>
+    <div id="cp-meta" class="cp-meta"></div>
+    <div id="cp-chart" class="cp-chart"></div>
+    <button id="cp-track-btn" class="btn btn--primary" style="width:100%"></button>
+  </section>
+
+  <!-- Not on a product page -->
+  <div id="no-product" class="empty-hint" hidden>
+    <span class="empty-icon">🔍</span>
+    <p>Open an Amazon product page to track its price.</p>
+  </div>
+
+  <!-- Watchlist -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-title">WATCHLIST</span>
+      <span id="wl-count" class="section-count"></span>
+    </div>
+    <ul id="watchlist" class="watchlist"></ul>
+    <div id="wl-empty" class="empty-hint" hidden>
+      <span class="empty-icon">📋</span>
+      <p>No tracked products yet. Hit <strong>Track Price</strong> on any Amazon listing.</p>
+    </div>
+  </section>
+
+  <!-- Settings panel -->
+  <section id="settings-panel" class="settings-panel" hidden>
+    <div class="settings-title">Settings</div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Price-drop alerts</div>
+        <div class="setting-hint">Desktop notification when price falls</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-alerts">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Alert threshold</div>
+        <div class="setting-hint">Minimum drop to trigger alert</div>
+      </div>
+      <div class="threshold-wrap">
+        <input type="number" id="s-threshold" class="threshold-input" min="1" max="50"> %
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Show overlay on Amazon</div>
+        <div class="setting-hint">Floating panel on product pages</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-overlay">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Share anonymous market data</div>
+        <div class="setting-hint">Helps improve deal scoring (no PII)</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-sharing">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="settings-footer">
+      <div id="storage-info" class="storage-info"></div>
+      <button id="clear-btn" class="btn btn--danger">Clear all data</button>
+    </div>
+  </section>
+
+  <script src="../utils/storage.js"></script>
+  <script src="../utils/parser.js"></script>
+  <script src="../utils/calculator.js"></script>
+  <script src="../utils/chart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

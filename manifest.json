@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "PriceHawk – Amazon Arbitrage Tool",
+  "short_name": "PriceHawk",
+  "version": "0.1.0",
+  "description": "Track Amazon prices, calculate FBA profit, and find arbitrage deals. Price history stored locally.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.amazon.com/*",
+    "https://www.amazon.co.uk/*",
+    "https://www.amazon.ca/*",
+    "https://www.walmart.com/*",
+    "https://www.target.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.amazon.com/*",
+        "https://www.amazon.co.uk/*",
+        "https://www.amazon.ca/*"
+      ],
+      "js": [
+        "utils/storage.js",
+        "utils/parser.js",
+        "utils/calculator.js",
+        "utils/chart.js",
+        "content/amazon.js"
+      ],
+      "css": ["content/amazon.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "PriceHawk",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
