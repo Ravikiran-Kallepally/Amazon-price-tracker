@@ -20,25 +20,52 @@ async function init() {
 
 // ── Current product ────────────────────────────────────────────────────────
 
+const AMAZON_PATTERN = /amazon\.(com|co\.uk|ca)\//;
+
 async function renderCurrentProduct(product, watchlist) {
-  const section = document.getElementById('current-product');
-  const noProduct = document.getElementById('no-product');
+  const section    = document.getElementById('current-product');
+  const noProduct  = document.getElementById('no-product');
+  const hintText   = noProduct.querySelector('p');
+  const hintIcon   = noProduct.querySelector('.empty-icon');
+
+  // Always resolve the active tab first so we can tailor the message
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const isAmazonTab = AMAZON_PATTERN.test(tab?.url ?? '');
 
   if (!product?.asin || !product?.price) {
+    noProduct.hidden = false;
+
+    if (isAmazonTab) {
+      // Content script hasn't run yet — tab was open before extension loaded
+      hintIcon.textContent = '↻';
+      hintText.innerHTML   = 'Refresh this tab to activate PriceHawk.';
+
+      if (!document.getElementById('ph-refresh-btn')) {
+        const btn = document.createElement('button');
+        btn.id        = 'ph-refresh-btn';
+        btn.className = 'btn btn--primary';
+        btn.textContent = 'Refresh Tab';
+        btn.style.marginTop = '10px';
+        btn.addEventListener('click', () => {
+          chrome.tabs.reload(tab.id);
+          window.close();
+        });
+        noProduct.appendChild(btn);
+      }
+    } else {
+      hintIcon.textContent = '🔍';
+      hintText.textContent = 'Open an Amazon product page to track its price.';
+    }
+    return;
+  }
+
+  // product data exists — make sure we're still on that Amazon tab
+  if (!isAmazonTab) {
     noProduct.hidden = false;
     return;
   }
 
   section.hidden = false;
-
-  // Check if the current product tab is still the active Amazon tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const isAmazonTab = tab?.url?.includes('amazon.com');
-  if (!isAmazonTab) {
-    noProduct.hidden = false;
-    section.hidden = true;
-    return;
-  }
 
   const history = await PH.storage.getPriceHistory(product.asin);
   const isTracked = watchlist.includes(product.asin);
