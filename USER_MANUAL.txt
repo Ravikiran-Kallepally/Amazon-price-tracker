@@ -1,0 +1,221 @@
+============================================================
+  PRICEHAWK — USER MANUAL  (v0.1.0)
+  Amazon Arbitrage & Price Tracking Extension
+============================================================
+
+────────────────────────────────────────────────────────────
+  INSTALLATION
+────────────────────────────────────────────────────────────
+
+1. Open Google Chrome.
+2. Go to:  chrome://extensions
+3. Turn ON "Developer mode" (toggle in the top-right corner).
+4. Click "Load unpacked".
+5. Select the folder containing this extension (the one with
+   manifest.json in it).
+6. PriceHawk is now installed. You'll see the ⚡ icon in your
+   Chrome toolbar.
+
+
+────────────────────────────────────────────────────────────
+  THE OVERLAY (on Amazon product pages)
+────────────────────────────────────────────────────────────
+
+When you visit any Amazon product page (amazon.com, amazon.co.uk,
+amazon.ca), a floating dark panel appears on the right side of
+the screen.
+
+  PRICE ROW
+    Shows the current Buy Box price.
+    A green badge (▼ X%) means the price is lower than when you
+    first tracked it. A red badge (▲ X%) means it's higher.
+    A gold "All-time low" badge means this is the lowest price
+    PriceHawk has ever recorded for this product.
+
+  LOW / HIGH BAR
+    Shows the lowest and highest prices recorded across all your
+    visits to this product page.
+
+  SPARKLINE CHART
+    A tiny price-history graph. Green line = price trending down,
+    orange line = price trending up. The dot marks the current price.
+    Data builds up over time as you (and only you) visit the page.
+
+  BSR / RATING / PRIME
+    Best Seller Rank, average rating, and whether Prime shipping
+    is available — key signals for resellers checking demand.
+
+  SOURCE / BUY PRICE CALCULATOR
+    Enter the price you'd pay to source the product (e.g. from
+    Walmart or a clearance sale). PriceHawk instantly shows:
+
+      Referral fee   — Amazon's cut (varies by category, 8–17%)
+      FBA fee (est.) — Estimated fulfillment cost based on price
+      Net profit     — What you'd make per unit after all fees
+      ROI            — Return on investment as a percentage
+      Break-even     — Maximum you can pay and still break even
+
+    Note: FBA fees are estimates. Actual fees depend on product
+    dimensions and weight. Use this as a quick filter — verify
+    with Amazon's FBA Revenue Calculator for final decisions.
+
+  TRACK PRICE button
+    Click "+ Track Price" to add this product to your Watchlist.
+    You'll get a Chrome notification the next time you visit the
+    page and the price has dropped by your alert threshold.
+    Click "✓ Tracking" again to remove it from the watchlist.
+
+  ─ / ✕ BUTTONS (top-right of overlay)
+    ─  Minimize the overlay to a small pill (click the pill to
+       restore it).
+    ✕  Close the overlay for this page visit.
+
+  DRAGGING
+    Click and drag the header bar to reposition the overlay
+    anywhere on the screen.
+
+
+────────────────────────────────────────────────────────────
+  THE POPUP (click the ⚡ icon in the toolbar)
+────────────────────────────────────────────────────────────
+
+  CURRENT PRODUCT PANEL
+    If your active tab is an Amazon product page, the popup shows
+    a summary of that product: image, title, current price, price
+    trend badge, BSR/rating, and a sparkline.
+
+    Use the "Track Price" / "✓ Tracking" button to add or remove
+    it from your watchlist without touching the overlay.
+
+  WATCHLIST
+    Lists every product you're tracking with:
+      • Title (truncated)
+      • Current price (last recorded)
+      • Price trend (▼ green = lower than when first tracked)
+      • "Low" badge if at the all-time lowest recorded price
+      • Mini sparkline
+      • ↗ link to open the product on Amazon
+      • ✕ button to remove from watchlist
+
+  ⚙ SETTINGS BUTTON (top-right of popup)
+    Toggles the settings panel.
+
+
+────────────────────────────────────────────────────────────
+  SETTINGS
+────────────────────────────────────────────────────────────
+
+  Price-drop alerts
+    ON/OFF toggle. When on, you receive a Chrome desktop
+    notification when a tracked product's price drops.
+
+  Alert threshold (default: 5%)
+    The minimum percentage price drop required to fire an alert.
+    E.g. set to 10 if you only want to know about significant drops.
+
+  Show overlay on Amazon
+    Toggle the floating overlay on/off. Turn off if you find it
+    intrusive; your price data still records in the background.
+
+  Share anonymous market data (default: OFF)
+    When enabled, PriceHawk saves anonymised product snapshots
+    (ASIN + price + BSR + rating — NO personal data, NO browsing
+    history) locally. These will be used in a future update to
+    power deal-scoring ("buy now vs wait") features. You can
+    turn this on to help build that dataset.
+
+  Storage info
+    Shows how many products are tracked, how many snapshots are
+    stored, and total storage used.
+
+  Clear all data
+    Permanently deletes all stored price history, watchlist,
+    snapshots, and settings. Cannot be undone.
+
+
+────────────────────────────────────────────────────────────
+  PRICE-DROP NOTIFICATIONS
+────────────────────────────────────────────────────────────
+
+Notifications fire when:
+  1. A product is on your watchlist, AND
+  2. You visit its Amazon page and the price is at least [threshold]%
+     lower than the previous recorded price.
+
+Clicking a notification opens the product page in a new tab.
+
+NOTE (v1): Prices are only checked when you visit the page.
+Background price polling (checking while you're not browsing)
+requires a backend server and will be added in v2.
+
+
+────────────────────────────────────────────────────────────
+  DATA & PRIVACY
+────────────────────────────────────────────────────────────
+
+• All data is stored locally on your device using Chrome's
+  built-in storage (chrome.storage.local).
+• Nothing is sent to any external server in this version.
+• The "Share anonymous market data" option is OFF by default.
+  When turned on, only product-level price/BSR data is stored
+  locally for future feature use. No user identifiers are ever
+  included in snapshots.
+• Use "Clear all data" in Settings to wipe everything.
+
+
+────────────────────────────────────────────────────────────
+  KNOWN LIMITATIONS (v0.1.0)
+────────────────────────────────────────────────────────────
+
+• Price history only builds from YOUR visits. The longer you
+  use the extension, the more accurate the Low/High/sparkline
+  data becomes.
+
+• FBA fees shown are estimates based on sell price. Always
+  verify with Amazon's official FBA Revenue Calculator for
+  products where margin is tight.
+
+• Walmart/Target source-price detection is not yet built.
+  Enter source prices manually in the calculator for now.
+
+• The extension only runs on amazon.com, amazon.co.uk, and
+  amazon.ca. Other Amazon storefronts can be added on request.
+
+• Background price polling (alerting without visiting the page)
+  requires a backend — coming in v2.
+
+
+────────────────────────────────────────────────────────────
+  TIPS FOR RESELLERS
+────────────────────────────────────────────────────────────
+
+1. QUICK DEAL FILTER
+   When scanning clearance racks or Walmart/Target deals,
+   open the Amazon listing and enter your cost in the "Source
+   Price" field. If Net Profit is green and ROI > 30%, it's
+   worth investigating further.
+
+2. WATCH THE BSR
+   BSR < 100,000 in a category usually means the product sells
+   at least a few units per day. BSR > 500,000 means slow
+   movement — your capital could be tied up a long time.
+
+3. ALL-TIME LOW BADGE
+   The gold "All-time low" badge means this is the cheapest
+   PriceHawk has seen the product. Strong buying signal if
+   the profit math works.
+
+4. MULTIPLE SELLERS
+   High seller count (visible in BSR metadata) = more
+   competition on the listing. Low seller count + good BSR =
+   better margin potential.
+
+5. BUILD YOUR HISTORY
+   The more Amazon pages you browse, the richer your price
+   history becomes. Enable the overlay and let it run in the
+   background while you do normal research.
+
+============================================================
+  Support / feedback: open an issue at
+  https://github.com/Ravikiran-Kallepally/Amazon-price-tracker
+============================================================
